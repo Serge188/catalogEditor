@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TreeTableColumn?>
+<?import javafx.scene.control.TreeTableView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="570.0" prefWidth="1200.0" xmlns="http://javafx.com/javafx/8.0.121" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.controller.TreeOverviewController">
+   <children>
+      <SplitPane dividerPositions="0.29797979797979796" prefHeight="160.0" prefWidth="300.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <items>
+            <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="568.0" prefWidth="600.0" SplitPane.resizableWithParent="false">
+               <children>
+                  <TreeTableView fx:id="treeTableView" onMouseClicked="#handleTableMouseClick" prefHeight="518.0" prefWidth="239.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <columns>
+                        <TreeTableColumn fx:id="titleColumn" prefWidth="282.0" text="Заголовок" />
+                      <TreeTableColumn fx:id="idColumn" prefWidth="46.0" text="ID" />
+                        <TreeTableColumn fx:id="priceColumn" prefWidth="116.0" text="Цена" />
+                        <TreeTableColumn fx:id="imageColumn" prefWidth="168.0" text="Изображение" />
+                    </columns>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </TreeTableView>
+                  <Button fx:id="createButton" layoutX="330.0" layoutY="528.0" mnemonicParsing="false" onAction="#handleCreate" text="Создать" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="201.0" />
+                  <Button fx:id="deleteButton" layoutX="507.0" layoutY="528.0" mnemonicParsing="false" onAction="#handleDelete" text="Удалить" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="30.0" />
+                  <Button fx:id="editButton" layoutX="397.0" layoutY="528.0" mnemonicParsing="false" onAction="#handleEdit" prefHeight="25.0" prefWidth="100.0" text="Редактировать" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="95.0" />
+                  <Button fx:id="refreshButton" layoutX="31.0" layoutY="528.0" mnemonicParsing="false" onAction="#handleRefresh" text="Обновить" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="30.0" />
+               </children>
+            </AnchorPane>
+          <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="0.0" minWidth="0.0" prefHeight="568.0" prefWidth="600.0" SplitPane.resizableWithParent="false">
+               <children>
+                  <TreeTableView fx:id="treeTableRight" layoutX="-11.0" layoutY="130.0" onMouseClicked="#handleRightTableMouse" prefHeight="518.0" prefWidth="354.0" AnchorPane.bottomAnchor="50.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <columns>
+                      <TreeTableColumn fx:id="titleColumnRight" prefWidth="310.0" text="Заголовок" />
+                        <TreeTableColumn fx:id="movedColumnRight" prefWidth="20.0" text="К" />
+                      <TreeTableColumn fx:id="idColumnRight" prefWidth="51.00001525878906" text="ID" />
+                        <TreeTableColumn fx:id="priceColumnRight" prefWidth="61.0" text="Цена" />
+                        <TreeTableColumn fx:id="imageColumnRight" prefWidth="168.0" text="Изображение" />
+                    </columns>
+                  </TreeTableView>
+                  <Button fx:id="moveButton" layoutX="23.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleMove" text="&lt;&lt;&lt; Перенести" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" />
+                  <Button fx:id="addNewSite" layoutX="490.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleAddNewSite" prefHeight="25.0" prefWidth="100.0" text="Добавить сайт" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+                  <Button fx:id="testButton" layoutX="437.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleTestSite" prefHeight="25.0" prefWidth="50.0" text="Тест" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="115.0" />
+               </children></AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</AnchorPane>
