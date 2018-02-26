@@ -46,8 +46,6 @@ public class LoginFormController {
 
     @FXML
     private void initialize(){
-        loginField.setText("esytov_mpk");
-        passwordField.setText("IsjYXG83");
     }
 
     public boolean isOkClicked(){
