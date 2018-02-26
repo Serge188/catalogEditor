@@ -1,6 +1,6 @@
 package application.model.dao;
 
-import application.consoleHelper.Transliterator;
+import application.services.Transliterator;
 import application.model.Model;
 import application.model.ShopItem;
 import org.apache.commons.net.ftp.FTP;

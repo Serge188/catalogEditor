@@ -1,6 +1,6 @@
 package application.model;
 
-import application.consoleHelper.Transliterator;
+import application.services.Transliterator;
 import javafx.beans.property.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
