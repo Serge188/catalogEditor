@@ -2,60 +2,21 @@ package application.model;
 
 import application.model.dao.ImageTransfer;
 import application.model.dao.ShopItemDaoImpl;
-import application.model.sites.CommonStrategy;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Writer;
+import application.model.sites.SiteParser;
 import java.util.*;
 
 public class Model {
     private Map<Integer, ShopItem> itemsMap;
-    private Map<Integer, ShopItem> downloadedItems;
     private ShopItemDaoImpl dao;
     private ImageTransfer imageTransfer;
-    private Properties properties;
-    CommonStrategy strategy = null;
+    private SiteParser parser = null;
 
     //При создании объекта модели сразу загружаем из БД все имеющиеся на сайте товары
     public Model() {
-        this.strategy = new CommonStrategy();
-        this.properties = new Properties();
-        strategy.setModel(this);
-        this.imageTransfer = new ImageTransfer();
     }
 
-
-    public Properties getProperties() {
-        return properties;
-    }
-
-    public void loadProperties(FileReader reader){
-        try {
-            properties.load(reader);
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-    }
-
-    public String getProperty(String key){
-        return properties.getProperty(key);
-    }
-
-    public void setProperty(String key, String value){
-        properties.setProperty(key, value);
-    }
-
-    public void storeProperties(Writer writer, String comments){
-        try {
-            properties.store(writer, comments);
-        } catch (IOException e){
-            e.printStackTrace();
-        }
+    public void setParser(SiteParser parser){
+        this.parser = parser;
     }
 
     //Получаем наибольший ID (для создания новых товаров)
@@ -67,32 +28,24 @@ public class Model {
         return maxId;
     }
 
-    public boolean testConnection(){
-        return dao.testConnection();
-    }
-
     public boolean setDao(String login, String password){
         ShopItemDaoImpl dao = new ShopItemDaoImpl(login, password);
         this.dao = dao;
         return dao.testConnection();
     }
 
+    public void setImageTransfer(String password){
+        ImageTransfer imageTransfer = new ImageTransfer(password);
+        this.imageTransfer = imageTransfer;
+    }
+
     //Возвращаем карту (ID-Товар) всех загруженных из БД товаров,
     //...предварительно установив связи между родительскими и дочерними элементами, для последующего построения дерева
     public Map<Integer, ShopItem> getAllItems(){
         this.itemsMap = dao.getAllItems();
-        setConnectionsToParents(itemsMap);
         return itemsMap;
     }
 
-    public ShopItem getItemById(int id, Map<Integer, ShopItem> map){
-        return map.get(id);
-    }
-
-    public Map<Integer, ShopItem> getDownloadedItems(){
-        downloadedItems = downloadItems();
-        return downloadedItems;
-    }
 
     //Метод для создания нового товара:
     // 1 - Добавляем новый товар в карту
@@ -140,90 +93,4 @@ public class Model {
             return false;
         }
     }
-
-    public boolean isIdExists(int id){
-        return itemsMap.containsKey(id);
-    }
-
-    //Получение списка ID дочерних элементов.
-    public List<Integer> getChildrenIds(int id, Map<Integer, ShopItem> map){
-        List<Integer> list = new ArrayList<>();
-        for(Map.Entry<Integer, ShopItem> pair: map.entrySet()){
-            if(pair.getValue().getParent() == id){
-                list.add(pair.getKey());
-            }
-        }
-        return list;
-    }
-
-    //Вспомогательный метод для установления связей между родительскими и дочерними элементами. (Для построения дерева).
-    public void setConnectionsToParents(Map<Integer, ShopItem> map){
-        Map<Integer, ShopItem> clonedMap = new HashMap<>(map);
-        for(Map.Entry<Integer, ShopItem> pair : clonedMap.entrySet()){
-            int currentId = pair.getValue().getId();
-            int parentId = pair.getValue().getParent();
-            ShopItem parentShopItem = map.get(parentId);
-            if(parentShopItem != null) {
-                parentShopItem.addChildId(currentId);
-            }
-        }
-    }
-
-    public boolean hasChildrenIds(int id, Map<Integer, ShopItem> map){
-        return !getChildrenIds(id, map).isEmpty();
-    }
-
-
-    //Загружаем товары со стороннего сайта, собираем их в карту (ID-Товар) и устанавливаем связи
-    //между родительскими и дочернми эелементами карты.
-    public Map<Integer, ShopItem> downloadItems(){
-        Map<Integer, ShopItem> downloadedItems = strategy.getItems(properties.getProperty("mainUrl"));
-        setConnectionsToParents(downloadedItems);
-        return downloadedItems;
-    }
-
-    //Загрузка одного товара со стороннего сайта. (Используется для тестирования)
-    public ShopItem getTestItem(String url){
-        ShopItem shopItem = new ShopItem();
-        try {
-            Document document = Jsoup.connect(url).get();
-            shopItem = strategy.getSingleItem(document);
-            System.out.println(shopItem.isItem());
-        } catch (IOException e){
-            e.printStackTrace();
-        }
-        return shopItem;
-    }
-
-    // Аналогичная загрузка тестового набора товаров для тестирования.
-    public Map<Integer, ShopItem> getTestMap(String url){
-        Map<Integer, ShopItem> map = new HashMap<>();
-        ShopItem shopItem = new ShopItem();
-        try {
-            Document doc = Jsoup.connect(url).get();
-            Elements elements = doc.getElementsByTag("a");
-            shopItem = strategy.getSingleItem(doc);
-            shopItem.setId(1);
-            shopItem.setParent(0);
-            map.put(1, shopItem);
-            int count = 2;
-            for(Element el : elements){
-                String currentLink = el.attr("href");
-                if(currentLink.contains("http") && currentLink.contains(url) && !currentLink.equals(url)&& !currentLink.contains("#") && !currentLink.contains("/?") && !currentLink.contains("/&") && !currentLink.contains(".php")) {
-                    Document currentDoc = Jsoup.connect(currentLink).get();
-                    shopItem = strategy.getSingleItem(currentDoc);
-                    shopItem.setId(count);
-                    shopItem.setParent(1);
-                    map.put(count, shopItem);
-                    System.out.println(currentLink);
-                    System.out.println(count);
-                    count++;
-                }
-            }
-        } catch(IOException e){
-            e.printStackTrace();
-        }
-        return map;
-    }
-
 }

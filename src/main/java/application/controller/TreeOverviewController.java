@@ -3,7 +3,11 @@ package application.controller;
 import application.TreeApp;
 import application.model.Model;
 import application.model.ShopItem;
+import application.model.sites.SiteParser;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
@@ -63,6 +67,17 @@ public class TreeOverviewController {
     @FXML
     private Button moveButton;
 
+    @FXML
+    private Button downloadButton;
+
+    @FXML
+    private Button addNewSite;
+
+    @FXML
+    private Button testButton;
+
+    @FXML
+    private Label currentPageLabel;
 
     @FXML
     TreeTableView<ShopItem> treeTableRight;
@@ -82,18 +97,31 @@ public class TreeOverviewController {
     @FXML
     private TreeTableColumn<ShopItem, ImageView> imageColumnRight;
 
-    @FXML
-    private Button downloadButton;
-
-    @FXML
-    private Button addNewSite;
-
-    @FXML
-    private Button testButton;
-
     private TreeApp treeApp;
     private Model model;
+    private SiteParser parser;
 
+    @FXML
+    private void initialize(){
+        idColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getIdProperty().asObject());
+        titleColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getPageTitleProperty());
+        priceColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getPriceProperty().asObject());
+        imageColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getMainImageforTable());
+
+        treeTableView.setShowRoot(true);
+        treeTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+
+        idColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getIdProperty().asObject());
+        titleColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getPageTitleProperty());
+        movedColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().isMovedProperty());
+        priceColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getPriceProperty().asObject());
+        imageColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getMainImageforTable());
+
+        treeTableRight.setShowRoot(true);
+        treeTableRight.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    }
+
+    //Нажатие кнопки "Обновить"
     @FXML
     private void handleRefresh(){
         treeTableView.getRoot().getChildren().clear();
@@ -101,20 +129,11 @@ public class TreeOverviewController {
         showCatalog();
     }
 
-
     //Нажатие кнопки "Создать"
     @FXML
     private void handleCreate(){
         ShopItem shopItem = new ShopItem();
         TreeItem selectedItem = treeTableView.getSelectionModel().getSelectedItem();
-        /*if(selectedItem != null) {
-            ShopItem selectedShopItem = (ShopItem) selectedItem.getValue();
-            shopItem.setParent(selectedShopItem.getId());
-            selectedItem.getChildrenIds().add(new TreeItem<>(shopItem));
-        } else {
-            shopItem.setParent(85);
-            treeTableView.getRoot().getChildrenIds().add(new TreeItem<>(shopItem));
-        }*/
         boolean ok = treeApp.showNewItemDialog(shopItem);
         if(ok) {
 
@@ -177,11 +196,31 @@ public class TreeOverviewController {
     private void handleAddNewSite(){
         boolean ok = treeApp.showNewSiteDialog();
         if(ok){
-            Map<Integer, ShopItem> map = model.downloadItems();
-            ShopItem rootShopItem = map.get(1);
-            TreeItem<ShopItem> rootNode = new TreeItem<>(rootShopItem);
-            treeTableRight.setRoot(rootNode);
-            buildTree(rootNode, map);
+            Service<Void> downloadingItems = new Service<Void>(){
+                @Override
+                protected Task<Void> createTask(){
+                  return new Task<Void>(){
+                    @Override
+                    protected Void call(){
+                        setRightButtonsDisable(true);
+                        Map<Integer, ShopItem> map = parser.downloadItems();
+                        setConnectionsToParents(map);
+                        ShopItem rootShopItem = map.get(1);
+                        TreeItem<ShopItem> rootNode = new TreeItem<>(rootShopItem);
+                        treeTableRight.setRoot(rootNode);
+                        buildTree(rootNode, map);
+                        return null;
+                    }
+                  };
+                }
+            };
+
+            downloadingItems.setOnSucceeded((event)->{
+                setRightButtonsDisable(false);
+                currentPageLabel.setText("");
+            });
+            downloadingItems.restart();
+
         }
     }
 
@@ -189,8 +228,7 @@ public class TreeOverviewController {
     private void handleTestSite(){
         boolean ok = treeApp.showNewSiteDialog();
         if(ok){
-            ShopItem testShopItem = model.getTestItem(model.getProperty("samplePage"));
-            System.out.println(testShopItem.isItem());
+            ShopItem testShopItem = parser.getTestItem();
             TreeItem<ShopItem> rootNode = new TreeItem<>(testShopItem);
             treeTableRight.setRoot(rootNode);
         }
@@ -199,40 +237,58 @@ public class TreeOverviewController {
     //Нажатие кнопки "Перенести". Копируются выделенные товары из правой таблицы в левую.
     @FXML
     private void handleMove(){
-        ShopItem shopItemToMove;
-        TreeItem<ShopItem> selectedTreeItem = treeTableView.getSelectionModel().getSelectedItem();
-        int parentId = selectedTreeItem.getValue().getId();
-        ObservableList<TreeItem<ShopItem>> selectedList = treeTableRight.getSelectionModel().getSelectedItems();
-        for(TreeItem ti : selectedList) {
-            shopItemToMove = (ShopItem) ti.getValue();
-            shopItemToMove.setParent(parentId);
-            shopItemToMove.setMoved("v");
-            selectedTreeItem.getChildren().add(new TreeItem<>(shopItemToMove));
-            model.createItem(shopItemToMove);
+        Service<Void> movingItems = new Service<Void>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    @Override
+                    public Void call() {
+                        setRightButtonsDisable(true);
+                        ShopItem shopItemToMove;
+                        TreeItem<ShopItem> selectedTreeItem = treeTableView.getSelectionModel().getSelectedItem();
+                        int parentId = selectedTreeItem.getValue().getId();
+                        ObservableList<TreeItem<ShopItem>> selectedList = treeTableRight.getSelectionModel().getSelectedItems();
+                        for (TreeItem ti : selectedList) {
+                            shopItemToMove = (ShopItem) ti.getValue();
+                            String currentPageTitle = shopItemToMove.getPageTitle();
+                            Platform.runLater(() -> currentPageLabel.setText("Копирование " + currentPageTitle));
+                            shopItemToMove.setParent(parentId);
+                            shopItemToMove.setMoved("v");
+                            selectedTreeItem.getChildren().add(new TreeItem<>(shopItemToMove));
+                            model.createItem(shopItemToMove);
+                        }
+                        return null;
+                    }
+                };
+            }
+        };
+        movingItems.setOnSucceeded((event) -> {
+            setRightButtonsDisable(false);
+            currentPageLabel.setText("");
+        });
+        movingItems.restart();
+    }
+
+    //Обработка двойного нажатия ЛКМ на левой таблице. Открывается окно редактирования выделенного товара.
+    @FXML
+    public void handleTableMouseClick(MouseEvent event){
+        if(event.getButton().equals(MouseButton.PRIMARY)){
+            if(event.getClickCount() == 2){
+                handleEdit();
+            }
         }
     }
 
-
+    //Обработка двойного нажатия ЛКМ на левой таблице. Открывается окно редактирования выделенного товара.
     @FXML
-    private void initialize(){
-        idColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getIdProperty().asObject());
-        titleColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getPageTitleProperty());
-        priceColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getPriceProperty().asObject());
-        imageColumn.setCellValueFactory(cellData -> cellData.getValue().getValue().getMainImageforTable());
-
-        treeTableView.setShowRoot(true);
-        treeTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
-
-        idColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getIdProperty().asObject());
-        titleColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getPageTitleProperty());
-        movedColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().isMovedProperty());
-        priceColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getPriceProperty().asObject());
-        imageColumnRight.setCellValueFactory(cellData -> cellData.getValue().getValue().getMainImageforTable());
-
-        treeTableRight.setShowRoot(true);
-        treeTableRight.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+    public void handleRightTableMouse(MouseEvent event){
+        if(event.getButton().equals(MouseButton.PRIMARY)){
+            if(event.getClickCount() == 2){
+                ShopItem shopItem = treeTableRight.getSelectionModel().getSelectedItem().getValue();
+                treeApp.showNewItemDialog(shopItem);
+            }
+        }
     }
-
 
     public TreeOverviewController() {
     }
@@ -240,13 +296,17 @@ public class TreeOverviewController {
     public void setTreeApp(TreeApp treeApp){
         this.treeApp = treeApp;
         model = treeApp.getModel();
+        parser = treeApp.getParser();
+        parser.setController(this);
         showCatalog();
     }
 
-    public void showCatalog(){
-        TreeItem<ShopItem> rootNode = new TreeItem<>(model.getAllItems().get(85));
+    private void showCatalog(){
+        Map<Integer, ShopItem> catalogItems = model.getAllItems();
+        setConnectionsToParents(catalogItems);
+        TreeItem<ShopItem> rootNode = new TreeItem<>(catalogItems.get(85));
         treeTableView.setRoot(rootNode);
-        buildTree(rootNode, model.getAllItems());
+        buildTree(rootNode, catalogItems);
     }
 
     //Рекурсивное построение дерева товаров (Для основного каталога и для товаров со стороннего сайта).
@@ -262,26 +322,26 @@ public class TreeOverviewController {
         }
     }
 
-    //Обработка двойного нажатия ЛКМ на левой таблице. Открывается окно редактирования выделенного товара.
-    @FXML
-    public void handleTableMouseClick(MouseEvent event){
-        if(event.getButton().equals(MouseButton.PRIMARY)){
-            if(event.getClickCount() == 2){
-                handleEdit();
-                //ShopItem shopItem = treeTableView.getSelectionModel().getSelectedItem().getValue();
-                //treeApp.showNewItemDialog(shopItem);
+    //Вспомогательный метод для установления связей между родительскими и дочерними элементами. (Для построения дерева).
+    private void setConnectionsToParents(Map<Integer, ShopItem> map){
+        Map<Integer, ShopItem> clonedMap = new HashMap<>(map);
+        for(Map.Entry<Integer, ShopItem> pair : clonedMap.entrySet()){
+            int currentId = pair.getValue().getId();
+            int parentId = pair.getValue().getParent();
+            ShopItem parentShopItem = map.get(parentId);
+            if(parentShopItem != null) {
+                parentShopItem.addChildId(currentId);
             }
         }
     }
 
-    //Обработка двойного нажатия ЛКМ на левой таблице. Открывается окно редактирования выделенного товара.
-    @FXML
-    public void handleRightTableMouse(MouseEvent event){
-        if(event.getButton().equals(MouseButton.PRIMARY)){
-            if(event.getClickCount() == 2){
-                ShopItem shopItem = treeTableRight.getSelectionModel().getSelectedItem().getValue();
-                treeApp.showNewItemDialog(shopItem);
-            }
-        }
+    public void updateLabel(String text){
+        currentPageLabel.setText(text);
+    }
+
+    private void setRightButtonsDisable(boolean b){
+        moveButton.setDisable(b);
+        testButton.setDisable(b);
+        addNewSite.setDisable(b);
     }
 }

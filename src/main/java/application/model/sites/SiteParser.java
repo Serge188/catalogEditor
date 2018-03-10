@@ -1,28 +1,67 @@
 package application.model.sites;
 
+import application.controller.TreeOverviewController;
 import application.model.Model;
 import application.model.ShopItem;
+import javafx.application.Platform;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 
-public class CommonStrategy {
+public class SiteParser {
 
     private Model model;
-    Map<Integer, ShopItem> downloadedItems = new HashMap<>();
+    private Map<Integer, ShopItem> downloadedItems = new HashMap<>();
+    private Properties properties;
+    private TreeOverviewController controller;
 
 
+    public SiteParser(){
+        this.properties = new Properties();
+    }
+
+    public void setController(TreeOverviewController controller){
+        this.controller = controller;
+    }
 
     public void setModel(Model model){
         this.model = model;
     }
 
+    public void loadProperties(FileReader reader){
+        try {
+            properties.load(reader);
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    public String getProperty(String key){
+        return properties.getProperty(key);
+    }
+
+    public void setProperty(String key, String value){
+        properties.setProperty(key, value);
+    }
+
+    public void storeProperties(Writer writer, String comments){
+        try {
+            properties.store(writer, comments);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
     //Метод для обработки всех страниц сайта и преобразования их (если возможно) в объекты ShopItem с помощью
     //метода getSingleItem().
-    public Map<Integer, ShopItem> getItems(String url){
+    public Map<Integer, ShopItem> downloadItems(){
+        String url = getProperty("mainUrl");
         String siteName = url.split("/")[2];
         try{
             Document document = Jsoup.connect(url).get();
@@ -37,12 +76,11 @@ public class CommonStrategy {
         return downloadedItems;
     }
 
-    int count = 2;
-    List<String> usedLinks = new ArrayList<>();
+    //Обходим страницы исследуемого сайта.
+    private int count = 2;
+    private List<String> usedLinks = new ArrayList<>();
 
-
-    //Обходим страницы сайта и пытаемся построить дерево.
-    public void buildItemMap(ShopItem parentShopItem, String siteName) throws IOException {
+    private void buildItemMap(ShopItem parentShopItem, String siteName) {
         String parentUrl = parentShopItem.getUrl();
         if(!parentUrl.endsWith("/")){
             parentShopItem.setUrl(parentUrl + "/");
@@ -68,6 +106,7 @@ public class CommonStrategy {
                         System.out.println(currentLink);
                         System.out.println(count);
                         usedLinks.add(currentLink);
+                        Platform.runLater(()-> controller.updateLabel(count + " " + currentLink));
                         Document currentDoc = null;
                         ShopItem currentItem = new ShopItem();
                         try {
@@ -93,11 +132,11 @@ public class CommonStrategy {
     }
 
     //Метод для извлечения данных со страницы товара и преобразования их в объект ShopItem.
-    public ShopItem getSingleItem(Document doc){
+    private ShopItem getSingleItem(Document doc){
         ShopItem shopItem = new ShopItem();
         Element titleElement = null;
         try {
-            titleElement = doc.selectFirst(model.getProperty("testPageTitle"));
+            titleElement = doc.selectFirst(getProperty("testPageTitle"));
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -106,13 +145,18 @@ public class CommonStrategy {
         } else {
             shopItem.setPageTitle(doc.location());
         }
-        Element priceElement = doc.selectFirst(model.getProperty("testPrice"));
+        Element priceElement = null;
+        try{
+            priceElement = doc.selectFirst(getProperty("testPrice"));
+        } catch(Exception e){
+            e.printStackTrace();
+        }
         if(priceElement != null){
             String priceText = priceElement.text().replaceAll("\\D", "");
             int price = 0;
             try{
                 int priceNative = Integer.parseInt(priceText);
-                double priceIndex = Double.parseDouble(model.getProperty("priceIndex"));
+                double priceIndex = Double.parseDouble(getProperty("priceIndex"));
                 price = (int)(priceNative*priceIndex);
             } catch (NumberFormatException e){
                 System.out.println("Цена не определена");
@@ -121,7 +165,7 @@ public class CommonStrategy {
         } else {
             shopItem.setPrice(0);
         }
-        Element introElement = doc.selectFirst(model.getProperty("testIntro"));
+        Element introElement = doc.selectFirst(getProperty("testIntro"));
         if(introElement != null){
             shopItem.setIntrotext(introElement.text());
         } else {
@@ -129,14 +173,14 @@ public class CommonStrategy {
         }
         Element introElement2 = null;
         try{
-            introElement2 = doc.selectFirst(model.getProperty("testIntro2"));
+            introElement2 = doc.selectFirst(getProperty("testIntro2"));
         } catch (Exception e){
             e.printStackTrace();
         }
         if(introElement2 != null){
             shopItem.setIntrotext(shopItem.getIntrotext() + " " + introElement2.text());
         }
-        Element contentElement = doc.selectFirst(model.getProperty("testContent"));
+        Element contentElement = doc.selectFirst(getProperty("testContent"));
         if(contentElement != null){
             shopItem.setContent(contentElement.html());
         } else {
@@ -144,7 +188,7 @@ public class CommonStrategy {
         }
         Element elementContent2 = null;
         try{
-            elementContent2 = doc.selectFirst(model.getProperty("testContent2"));
+            elementContent2 = doc.selectFirst(getProperty("testContent2"));
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -153,7 +197,7 @@ public class CommonStrategy {
         }
         Element elementContent3 = null;
         try{
-            elementContent3 = doc.selectFirst(model.getProperty("testContent3"));
+            elementContent3 = doc.selectFirst(getProperty("testContent3"));
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -162,14 +206,14 @@ public class CommonStrategy {
         }
         Element introElement3 = null;
         try{
-            introElement3 = doc.selectFirst(model.getProperty("testIntro3"));
+            introElement3 = doc.selectFirst(getProperty("testIntro3"));
         } catch (Exception e){
             e.printStackTrace();
         }
         if(introElement3 != null){
             shopItem.setIntrotext(shopItem.getIntrotext() + " " + introElement3.text());
         }
-        Element imageElement = doc.selectFirst(model.getProperty("testImageLink"));
+        Element imageElement = doc.selectFirst(getProperty("testImageLink"));
         if(imageElement != null){
             String imageLink = imageElement.attr("abs:href");
             if(imageLink == null || imageLink.isEmpty()){
@@ -179,8 +223,8 @@ public class CommonStrategy {
         } else {
             shopItem.setImageLink("");
         }
-        if(!model.getProperty("testGalleryItem").isEmpty()) {
-            Elements galleryElements = doc.select(model.getProperty("testGalleryItem"));
+        if(!getProperty("testGalleryItem").isEmpty()) {
+            Elements galleryElements = doc.select(getProperty("testGalleryItem"));
             if (galleryElements != null && !galleryElements.isEmpty()) {
                 for (Element el : galleryElements) {
                     String galleryItemLink = el.attr("abs:href");
@@ -199,4 +243,17 @@ public class CommonStrategy {
         return shopItem;
     }
 
+    //Загрузка одного товара со стороннего сайта. (Используется для тестирования)
+    public ShopItem getTestItem(){
+        ShopItem shopItem = new ShopItem();
+        String url = getProperty("samplePage");
+        try {
+            Document document = Jsoup.connect(url).get();
+            shopItem = getSingleItem(document);
+            System.out.println(shopItem.isItem());
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return shopItem;
+    }
 }

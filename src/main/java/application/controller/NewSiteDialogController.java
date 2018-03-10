@@ -2,6 +2,7 @@ package application.controller;
 
 import application.TreeApp;
 import application.model.Model;
+import application.model.sites.SiteParser;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -11,7 +12,6 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.*;
-import java.util.Properties;
 
 
 public class NewSiteDialogController {
@@ -20,7 +20,7 @@ public class NewSiteDialogController {
     private boolean okClicked = false;
     private TreeApp treeApp;
     private Model model;
-    private Properties properties = new Properties();
+    private SiteParser parser;
 
 
     @FXML
@@ -95,6 +95,7 @@ public class NewSiteDialogController {
     public void setTreeApp(TreeApp treeApp){
         this.treeApp = treeApp;
         this.model = treeApp.getModel();
+        this.parser = treeApp.getParser();
     }
 
     @FXML
@@ -105,20 +106,20 @@ public class NewSiteDialogController {
     //Сохраняем введенные запросы к сайту в файл properties.
     @FXML
     private void handleSave(){
-        model.setProperty("mainUrl", mainUrlField.getText());
-        model.setProperty("testPage", testPageField.getText());
-        model.setProperty("testPageTitle", testPageTitleField.getText());
-        model.setProperty("testIntro", testIntroField.getText());
-        model.setProperty("testIntro2", testIntroField2.getText());
-        model.setProperty("testIntro3", testIntroField3.getText());
-        model.setProperty("testPrice", testPriceField.getText());
-        model.setProperty("testContent", testContentField.getText());
-        model.setProperty("testContent2", testContentField2.getText());
-        model.setProperty("testContent3", testContentField3.getText());
-        model.setProperty("testImageLink", testImageLinkField.getText());
-        model.setProperty("testGalleryItem", testGalleryItemField.getText());
-        model.setProperty("priceIndex", priceIndexField.getText());
-        model.setProperty("samplePage", samplePageField.getText());
+        parser.setProperty("mainUrl", mainUrlField.getText());
+        parser.setProperty("testPage", testPageField.getText());
+        parser.setProperty("testPageTitle", testPageTitleField.getText());
+        parser.setProperty("testIntro", testIntroField.getText());
+        parser.setProperty("testIntro2", testIntroField2.getText());
+        parser.setProperty("testIntro3", testIntroField3.getText());
+        parser.setProperty("testPrice", testPriceField.getText());
+        parser.setProperty("testContent", testContentField.getText());
+        parser.setProperty("testContent2", testContentField2.getText());
+        parser.setProperty("testContent3", testContentField3.getText());
+        parser.setProperty("testImageLink", testImageLinkField.getText());
+        parser.setProperty("testGalleryItem", testGalleryItemField.getText());
+        parser.setProperty("priceIndex", priceIndexField.getText());
+        parser.setProperty("samplePage", samplePageField.getText());
 
         FileChooser fileChooser = new FileChooser();
         FileChooser.ExtensionFilter extensionFilter = new FileChooser.ExtensionFilter("Property files", "*.properties");
@@ -128,7 +129,7 @@ public class NewSiteDialogController {
         if(file != null){
             try {
                 FileWriter fw = new FileWriter(file);
-                model.storeProperties(fw, "Site config");
+                parser.storeProperties(fw, "Site config");
                 fw.close();
             } catch(IOException e){
                 e.printStackTrace();
@@ -146,22 +147,22 @@ public class NewSiteDialogController {
         if(file != null){
             try {
                 FileReader fr = new FileReader(file);
-                model.loadProperties(fr);
+                parser.loadProperties(fr);
                 fr.close();
-                mainUrlField.setText(model.getProperty("mainUrl"));
-                testPageField.setText(model.getProperty("testPage"));
-                testPageTitleField.setText(model.getProperty("testPageTitle"));
-                testIntroField.setText(model.getProperty("testIntro"));
-                testIntroField2.setText(model.getProperty("testIntro2"));
-                testIntroField3.setText(model.getProperty("testIntro3"));
-                testPriceField.setText(model.getProperty("testPrice"));
-                testContentField.setText(model.getProperty("testContent"));
-                testContentField2.setText(model.getProperty("testContent2"));
-                testContentField3.setText(model.getProperty("testContent3"));
-                testImageLinkField.setText(model.getProperty("testImageLink"));
-                testGalleryItemField.setText(model.getProperty("testGalleryItem"));
-                priceIndexField.setText(model.getProperty("priceIndex"));
-                samplePageField.setText(model.getProperty("samplePage"));
+                mainUrlField.setText(parser.getProperty("mainUrl"));
+                testPageField.setText(parser.getProperty("testPage"));
+                testPageTitleField.setText(parser.getProperty("testPageTitle"));
+                testIntroField.setText(parser.getProperty("testIntro"));
+                testIntroField2.setText(parser.getProperty("testIntro2"));
+                testIntroField3.setText(parser.getProperty("testIntro3"));
+                testPriceField.setText(parser.getProperty("testPrice"));
+                testContentField.setText(parser.getProperty("testContent"));
+                testContentField2.setText(parser.getProperty("testContent2"));
+                testContentField3.setText(parser.getProperty("testContent3"));
+                testImageLinkField.setText(parser.getProperty("testImageLink"));
+                testGalleryItemField.setText(parser.getProperty("testGalleryItem"));
+                priceIndexField.setText(parser.getProperty("priceIndex"));
+                samplePageField.setText(parser.getProperty("samplePage"));
             } catch(IOException e){
                 e.printStackTrace();
             }
@@ -171,22 +172,21 @@ public class NewSiteDialogController {
     //Обработка нажатия "ОК". Начинается обработка стороннего сайта.
     @FXML
     private void handleOk(){
-        model.setProperty("mainUrl", mainUrlField.getText());
-        model.setProperty("testPage", testPageField.getText());
-        model.setProperty("testPageTitle", testPageTitleField.getText());
-        model.setProperty("testIntro", testIntroField.getText());
-        model.setProperty("testIntro2", testIntroField2.getText());
-        model.setProperty("testIntro3", testIntroField3.getText());
-        model.setProperty("testPrice", testPriceField.getText());
-        model.setProperty("testContent", testContentField.getText());
-        model.setProperty("testContent2", testContentField2.getText());
-        model.setProperty("testContent3", testContentField3.getText());
-        model.setProperty("testImageLink", testImageLinkField.getText());
-        model.setProperty("testGalleryItem", testGalleryItemField.getText());
-        model.setProperty("priceIndex", priceIndexField.getText());
-        model.setProperty("samplePage", samplePageField.getText());
+        parser.setProperty("mainUrl", mainUrlField.getText());
+        parser.setProperty("testPage", testPageField.getText());
+        parser.setProperty("testPageTitle", testPageTitleField.getText());
+        parser.setProperty("testIntro", testIntroField.getText());
+        parser.setProperty("testIntro2", testIntroField2.getText());
+        parser.setProperty("testIntro3", testIntroField3.getText());
+        parser.setProperty("testPrice", testPriceField.getText());
+        parser.setProperty("testContent", testContentField.getText());
+        parser.setProperty("testContent2", testContentField2.getText());
+        parser.setProperty("testContent3", testContentField3.getText());
+        parser.setProperty("testImageLink", testImageLinkField.getText());
+        parser.setProperty("testGalleryItem", testGalleryItemField.getText());
+        parser.setProperty("priceIndex", priceIndexField.getText());
+        parser.setProperty("samplePage", samplePageField.getText());
         try {
-            //String errorMessage = model.checkQueries();
             if (false) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.initOwner(newSiteStage);

@@ -15,11 +15,15 @@ import java.util.List;
 //Класс для работы с изображениями товаров
 public class ImageTransfer {
     private final static String HOST = "176.57.210.40";
-    private final static String PASSWORD = "IsjYXG83";
     private final static String SERVER_FOLDER_FOR_IMAGES = "/mebelpokarmany.ru/public_html/assets/images/products/application/";
 
     private Model model;
     private FTPClient fileClient;
+    private String password;
+
+    public ImageTransfer(String password){
+        this.password = password;
+    }
 
     //Устанавливаем FTP-соедиение. Логин и пароль будут запрашиваться у пользователя.
     private void setConnection(){
@@ -27,7 +31,7 @@ public class ImageTransfer {
             fileClient = new FTPClient();
             fileClient.connect(HOST);
             fileClient.enterLocalPassiveMode();
-            fileClient.login("esytov", PASSWORD);
+            fileClient.login("esytov", password);
             fileClient.setFileType(FTP.BINARY_FILE_TYPE);
             fileClient.setFileTransferMode(FTP.BINARY_FILE_TYPE);
         } catch (IOException e){

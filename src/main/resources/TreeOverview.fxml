@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.TreeTableColumn?>
 <?import javafx.scene.control.TreeTableView?>
@@ -44,6 +45,7 @@
                   <Button fx:id="moveButton" layoutX="23.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleMove" text="&lt;&lt;&lt; Перенести" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" />
                   <Button fx:id="addNewSite" layoutX="490.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleAddNewSite" prefHeight="25.0" prefWidth="100.0" text="Добавить сайт" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
                   <Button fx:id="testButton" layoutX="437.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleTestSite" prefHeight="25.0" prefWidth="50.0" text="Тест" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="115.0" />
+                  <Label fx:id="currentPageLabel" layoutX="171.0" layoutY="537.0" AnchorPane.leftAnchor="130.0" AnchorPane.rightAnchor="170.0" />
                </children></AnchorPane>
         </items>
       </SplitPane>

@@ -3,6 +3,7 @@ package application;
 import application.controller.*;
 import application.model.Model;
 import application.model.ShopItem;
+import application.model.sites.SiteParser;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -18,14 +19,22 @@ public class TreeApp extends Application{
     private Stage stage;
     private BorderPane mainLayout;
     private Model model;
+    private SiteParser parser;
 
 
     public TreeApp(){
-        model = new Model();
+        this.model = new Model();
+        this.parser = new SiteParser();
+        model.setParser(parser);
+        parser.setModel(model);
     }
 
     public Model getModel(){
         return model;
+    }
+
+    public SiteParser getParser() {
+        return parser;
     }
 
     public static void main(String[] args){
@@ -33,7 +42,7 @@ public class TreeApp extends Application{
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(Stage primaryStage) {
         this.stage = primaryStage;
         this.stage.setTitle("Редактор каталога");
 
@@ -45,7 +54,7 @@ public class TreeApp extends Application{
 
     }
 
-    public void initMainLayout(){
+    private void initMainLayout(){
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(TreeApp.class.getClassLoader().getResource("MainLayout.fxml"));
@@ -60,7 +69,7 @@ public class TreeApp extends Application{
     }
 
     //Окно ввода данных пользователя
-    public boolean showLoginForm(){
+    private boolean showLoginForm(){
         try{
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(TreeApp.class.getClassLoader().getResource("LoginForm.fxml"));
@@ -95,7 +104,7 @@ public class TreeApp extends Application{
     }
 
     //Метод выгружает товары с основного сайта  и отображает дерево каталога
-    public void showTree(){
+    private void showTree(){
         try {
             FXMLLoader loader = new FXMLLoader();
             loader.setLocation(TreeApp.class.getClassLoader().getResource("TreeOverview.fxml"));

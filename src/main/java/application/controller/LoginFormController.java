@@ -24,7 +24,7 @@ public class LoginFormController {
     private Button loginButton;
 
     @FXML
-    private Button camcelButton;
+    private Button cancelButton;
 
     @FXML
     private void handleLogin(){
@@ -32,6 +32,7 @@ public class LoginFormController {
         String password = passwordField.getText();
         if(!login.isEmpty() && ! password.isEmpty()) {
             okClicked = model.setDao(login, password);
+            model.setImageTransfer(password);
         } else {
             okClicked = false;
         }
@@ -46,6 +47,7 @@ public class LoginFormController {
 
     @FXML
     private void initialize(){
+
     }
 
     public boolean isOkClicked(){

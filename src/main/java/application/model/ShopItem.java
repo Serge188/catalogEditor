@@ -155,10 +155,10 @@ public class ShopItem {
         return(longTitle.get().length() > 0 ||
                 description.get().length() > 0 ||
                 introtext.get().length() > 0 ||
-                content.get().length() > 0 ||
+                //content.get().length() > 0 ||
                 price.get() > 0 ||
-                childrenIds.size() > 0 ||
-                imageLink.length() > 0
+                childrenIds.size() > 0
+                //imageLink.length() > 0
         );
     }
     public String getImageLink(){
