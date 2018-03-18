@@ -42,10 +42,12 @@
                         <TreeTableColumn fx:id="imageColumnRight" prefWidth="168.0" text="Изображение" />
                     </columns>
                   </TreeTableView>
+                  <Label fx:id="currentPageLabel" AnchorPane.bottomAnchor="35.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" />
                   <Button fx:id="moveButton" layoutX="23.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleMove" text="&lt;&lt;&lt; Перенести" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="20.0" />
                   <Button fx:id="addNewSite" layoutX="490.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleAddNewSite" prefHeight="25.0" prefWidth="100.0" text="Добавить сайт" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
                   <Button fx:id="testButton" layoutX="437.0" layoutY="529.0" mnemonicParsing="false" onAction="#handleTestSite" prefHeight="25.0" prefWidth="50.0" text="Тест" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="115.0" />
-                  <Label fx:id="currentPageLabel" layoutX="171.0" layoutY="537.0" AnchorPane.leftAnchor="130.0" AnchorPane.rightAnchor="170.0" />
+                  <Button fx:id="uploadToFileButton" layoutX="157.0" layoutY="533.0" mnemonicParsing="false" onAction="#handleExcelUpload" text="Сохранить в файл" />
+                  <Button fx:id="downloadFromFileButton" layoutX="279.0" layoutY="533.0" mnemonicParsing="false" onAction="#handleExcelDownload" text="Восстановить из файла" />
                </children></AnchorPane>
         </items>
       </SplitPane>

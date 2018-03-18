@@ -27,7 +27,7 @@
       <FlowPane fx:id="gallery" layoutX="800.0" layoutY="15.0" onDragDropped="#handleGalleryDrop" onDragOver="#handleDragOver" onMouseClicked="#handleGalleryMouseClick" prefHeight="250.0" prefWidth="390.0" style="-fx-border-color: grey; -fx-border-width: 3; -fx-border-style: dashed;" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="20.0" />
       <HTMLEditor fx:id="contentEditor" htmlText="&lt;html&gt;&lt;head&gt;&lt;/head&gt;&lt;body contenteditable=&quot;true&quot;&gt;&lt;/body&gt;&lt;/html&gt;" layoutX="35.0" layoutY="286.0" prefHeight="270.0" prefWidth="1130.0" AnchorPane.leftAnchor="35.0" AnchorPane.rightAnchor="35.0" AnchorPane.topAnchor="285.0" />
       <Button fx:id="saveButton" layoutX="1024.0" layoutY="565.0" mnemonicParsing="false" onAction="#handleSave" text="Сохранить" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="100.0" />
-      <Button fx:id="cancelButton" layoutX="1121.0" layoutY="561.0" mnemonicParsing="false" text="Отмена" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="35.0" />
+      <Button fx:id="cancelButton" layoutX="1121.0" layoutY="561.0" mnemonicParsing="false" onAction="#handleCancel" text="Отмена" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="35.0" />
       <Label layoutX="459.0" layoutY="137.0" text="руб." />
    </children>
 </AnchorPane>

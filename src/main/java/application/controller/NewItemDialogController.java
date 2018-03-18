@@ -46,9 +46,6 @@ public class NewItemDialogController {
     @FXML
     private FlowPane gallery;
 
-    @FXML
-    private Button saveButton;
-
 
     private Stage itemDialogStage;
     private ShopItem shopItem;
@@ -69,6 +66,11 @@ public class NewItemDialogController {
         okClicked = true;
         itemDialogStage.close();
         return shopItem;
+    }
+
+    @FXML
+    private void handleCancel(){
+        itemDialogStage.close();
     }
 
     //Серия методов, задействованных в перетаскивании изображений в форму.

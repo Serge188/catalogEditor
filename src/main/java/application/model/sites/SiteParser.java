@@ -76,6 +76,10 @@ public class SiteParser {
         return downloadedItems;
     }
 
+    public Map<Integer, ShopItem> getDownloadedItems(){
+        return downloadedItems;
+    }
+
     //Обходим страницы исследуемого сайта.
     private int count = 2;
     private List<String> usedLinks = new ArrayList<>();
@@ -100,7 +104,8 @@ public class SiteParser {
                             !currentLink.contains("#") &&
                             !currentLink.contains("/?") &&
                             !currentLink.contains("/&") &&
-                            !currentLink.contains(".php") //&&
+                            !currentLink.contains(".php") &&
+                            !currentLink.contains("@")//&&
                             //currentLink.split("/").length <= 6
                             ) {
                         System.out.println(currentLink);
