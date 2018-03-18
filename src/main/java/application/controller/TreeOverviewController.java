@@ -377,30 +377,7 @@ public class TreeOverviewController {
                 currentPageLabel.setText("");
             });
             downloadingItems.restart();
-
         }
-        /*ShopItem si = new ShopItem();
-        si.setPageTitle("Root item");
-        si.setId(1);
-        si.setParent(0);
-        TreeItem<ShopItem> rootItem = new TreeItem<>(si);
-        treeTableRight.setRoot(rootItem);
-
-        ShopItem si11 = new ShopItem();
-        si11.setId(11);
-        si11.setParent(1);
-        si11.setPageTitle("Title 11");
-        si11.setPrice(1000);
-        ShopItem si12 = new ShopItem();
-        si12.setId(12);
-        si12.setParent(1);
-        si12.setPageTitle("Title 12");
-        si12.setPrice(1200);
-        treeTableRight.getRoot().getChildren().add(new TreeItem<>(si11));
-        treeTableRight.getRoot().getChildren().add(new TreeItem<>(si12));
-        downloadedItems.put(1, si);
-        downloadedItems.put(11, si11);
-        downloadedItems.put(12, si12);*/
     }
 
     @FXML
